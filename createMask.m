@@ -3,7 +3,6 @@ function [BW,maskedRGBImage] = createMask(RGB)
 %  minimum/maximum values for each channel of the colorspace were set in the
 %  App and result in a binary mask BW and a composite image maskedRGBImage,
 %  which shows the original RGB image values under the mask BW.
-
 % Convert RGB image to chosen color space
 I = rgb2hsv(RGB);
 
