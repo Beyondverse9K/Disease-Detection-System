@@ -13,62 +13,36 @@ function [itrfin] = multisvm(T, C, test)
         T = Tb;
         u = unique(C);
         N = length(u);
-        c3 = [];  % Initialize c3 for reduced training set
-        c4 = [];  % Initialize c4 for reduced group
-        j = 1;
-        k = 1;
-
-        if N > 1
-            itr = 1;
-            classes = 0;
-            cond = max(C) - min(C);
-
-            while (classes ~= 1) && (itr <= length(u)) && (size(C, 1) > 0) && (cond > 0)
-                c1 = (C == u(itr));
-                newClass = c1;
-
-                % Train the SVM model using fitcsvm
-                svmModel = fitcsvm(T, newClass, 'KernelFunction', 'rbf');  % RBF kernel
-                classes = predict(svmModel, tst);
-
-                % Reduction of Training Set
-                for i = 1:length(newClass)
-                    if newClass(i) == 0
-                        c3(k, :) = T(i, :);
-                        k = k + 1;
-                    end
-                end
-                T = c3;  % Update T
-                c3 = []; % Reset c3
-                k = 1;   % Reset k
-
-                % Reduction of Group
-                for i = 1:length(newClass)
-                    if newClass(i) == 0
-                        c4(j) = C(i);
-                        j = j + 1;
-                    end
-                end
-                C = c4;  % Update C
-                c4 = []; % Reset c4
-                j = 1;   % Reset j
-
-                cond = max(C) - min(C);  % Update condition
-
-                % Increment iteration index if classes are not yet determined
-                if classes ~= 1
-                    itr = itr + 1;
-                end
-                if itr > length(u)
-                    break;  % Exit if itr exceeds the number of unique classes
-                end
-            end
+        
+        if N <= 1
+            % If there's only one class, assign it directly
+            itrfin(tempind) = C(1);
+            continue;
         end
 
-        % Logic for classification of multiple rows in the testing matrix
-        valt = Cb == u(itr);
-        val = Cb(valt == 1);
-        val = unique(val);
-        itrfin(tempind) = val;  % Store the result for the current test sample
+        itr = 1;  % Initialize itr
+        classes = 0;
+
+        while (classes ~= 1) && (itr <= length(u))
+            c1 = (C == u(itr));  % Create a binary class vector
+            newClass = double(c1);  % Convert logical to double for SVM
+
+            % Train the SVM model using fitcsvm
+            svmModel = fitcsvm(T, newClass, 'KernelFunction', 'rbf');  % RBF kernel
+            classes = predict(svmModel, tst);
+
+            % Check if the prediction is valid
+            if classes == 1
+                itrfin(tempind) = u(itr);  % Store the result for the current test sample
+                break;  % Exit the loop if a class is found
+            end
+
+            itr = itr + 1;  % Increment iteration index
+        end
+
+        % If no valid class was found, assign NaN
+        if itr > length(u)
+            itrfin(tempind) = NaN;  % Assign NaN if no valid class is found
+        end
     end
 end

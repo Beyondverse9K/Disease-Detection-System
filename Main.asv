@@ -134,14 +134,8 @@ end
 
         % Call the multisvm function to classify the test features
         predicted_class = multisvm(Train_Feat, Train_Label, test_feat);
-        if predicted_class == 1
-            pc="Healthy";
-        elseif predicted_class == 2
-            pc="Powdery";
-        else
-            pc="Rust";
-        end
-        disp('Predicted Class: ', pc);
+        if
+        disp(['Predicted Class: ', num2str(predicted_class)]);
     end
     
     if choice == 3
